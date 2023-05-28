@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
     cb(null, `./uploads`);
   },
   filename: function (req, file, cb) {
-    cb(null, `${imageId + ".png"}`);
+    cb(null, `${Date.now() + file.originalname}`);
   },
 });
 
@@ -139,6 +139,22 @@ app.post("/update", uploadImg.single("file"), async (req, res) => {
     //       }
     //     });
     // } else {
+    if (req.file) {
+      await FarmModel.find({ _id: req.body.id }).then((data) => {
+        const filePath = path.join(
+          path.resolve("./"),
+          "./uploads",
+          data[0].image.split("/").pop()
+        );
+        try {
+          console.log(filePath);
+          fs.unlinkSync(filePath);
+          console.log("Delete File successfully.");
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    }
     await FarmModel.findOneAndUpdate(
       { _id: req.body.id },
       {
